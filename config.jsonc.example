@@ -1,0 +1,21 @@
+{
+    // SSL section;
+    "ssl": {
+        "domain": "🛑YOUR-DOMAIN", // example.com, foo.example.com, ... 🆘 Don't set 'http://'' or 'https://' as prefix!
+        "cert": "/etc/letsencrypt/live/🛑YOUR-DOMAIN/fullchain.pem", // SSL Cert
+        "key": "/etc/letsencrypt/live/🛑YOUR-DOMAIN/privkey.pem" // SSL Key
+    },
+    // Application section;
+    "app": {
+        "use_ssl": false, // 🆘 Default: false (insecure connection!!). Add ssl -> domain, cert and key and set use_ssl to true!
+        "port": 3334 // Default: 3334;
+    },
+    // Database section;
+    "database": {
+        "host": "🛑YOUR-SQL-HOST", // Database host: IP Address or FQDN
+        "user": "🛑YOUR-SQL-USER", // Database username. Requires create database and table privileges.
+        "password": "🛑YOUR-SQL-PASSWORD", // Database password.
+        "database": "🛑YOUR-SQL-DATABASE", // Database name. Will be auto-created if it doesn't exist.
+        "port": 3306 // Database port. 
+    }
+}
