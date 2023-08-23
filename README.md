@@ -73,3 +73,7 @@ The software is provided "As is", without warranty of any kind, express or impli
 - Debian Buster (11.7)
 - Mysql Server version: 10.5.19-MariaDB-0+deb11u2 Debian 11
 - Node v20.5.0
+
+## Images
+
+![Io-Chart](docs/images/iodraw.png)
