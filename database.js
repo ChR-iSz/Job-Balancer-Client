@@ -107,6 +107,7 @@ async function createTables() {
                     Port SMALLINT UNSIGNED NOT NULL,
                     UseSSL BOOLEAN NOT NULL DEFAULT 0,
                     Fqdn varchar(255) DEFAULT '',
+                    JobClassId int(11) DEFAULT 1,
                     PRIMARY KEY (Id),
                     UNIQUE KEY unique_serial (Serial)
                 )`;
@@ -117,8 +118,35 @@ async function createTables() {
                         return reject(err);
                     };
 
-                    console.info("[INFO] ...CREATE TABLE IF NOT EXISTS JOBS");
-                    let JobsTable = `CREATE TABLE IF NOT EXISTS JOBS (
+                    console.info("[INFO] ...CREATE TABLE IF NOT EXISTS JOB_CLASSES");
+                    let JobClassesTable = `CREATE TABLE IF NOT EXISTS JOB_CLASSES (
+                        Id int(11) NOT NULL AUTO_INCREMENT,
+                        Name VARCHAR(255) NOT NULL,
+                        MaxJobs int(11) default 5,
+                        PRIMARY KEY (Id),
+                        UNIQUE KEY unique_serial (Name)
+                    )`;
+
+                    connection.query(JobClassesTable, function (err, results, fields) {
+                        if (err) {
+                            console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS JOB_CLASSES failed!'));
+                            return reject(err);
+                        };
+
+                        const AddDefaultJobClass = [
+                            `INSERT IGNORE INTO JOB_CLASSES (Id, Name, MaxJobs) VALUES (1, 'Default', 5);`,
+                        ];
+                        AddDefaultJobClass.forEach((statement) => {
+                            connection.query(statement, (err, results, fields) => {
+                                if (err) {
+                                    console.error(colors.red('[ERROR] ...CREATE DEFAULT JOB-CLASS failed!'));
+                                    return reject(err);
+                                };
+                            });
+                        });
+
+                        console.info("[INFO] ...CREATE TABLE IF NOT EXISTS JOBS");
+                        let JobsTable = `CREATE TABLE IF NOT EXISTS JOBS (
                         Id int(11) NOT NULL AUTO_INCREMENT,
                         StateId int(11) DEFAULT 1,
                         WorkerId int(11) DEFAULT 0,
@@ -131,14 +159,14 @@ async function createTables() {
                         PRIMARY KEY (Id)
                     )`;
 
-                    connection.query(JobsTable, function (err, results, fields) {
-                        if (err) {
-                            console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS JOBS failed!'));
-                            return reject(err);
-                        };
+                        connection.query(JobsTable, function (err, results, fields) {
+                            if (err) {
+                                console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS JOBS failed!'));
+                                return reject(err);
+                            };
 
-                        console.info("[INFO] ...CREATE TABLE IF NOT EXISTS LOGGING");
-                        let LoggingTable = `CREATE TABLE IF NOT EXISTS LOGGING (
+                            console.info("[INFO] ...CREATE TABLE IF NOT EXISTS LOGGING");
+                            let LoggingTable = `CREATE TABLE IF NOT EXISTS LOGGING (
                             Id int(11) NOT NULL AUTO_INCREMENT,
                             JobId int(11) NOT NULL,
                             StdOut longtext DEFAULT NULL,
@@ -146,14 +174,14 @@ async function createTables() {
                             UNIQUE KEY JobId (JobId)
                         )`;
 
-                        connection.query(LoggingTable, function (err, results, fields) {
-                            if (err) {
-                                console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS LOGGING failed!'));
-                                return reject(err);
-                            };
+                            connection.query(LoggingTable, function (err, results, fields) {
+                                if (err) {
+                                    console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS LOGGING failed!'));
+                                    return reject(err);
+                                };
 
-                            console.info("[INFO] ...CREATE TABLE IF NOT EXISTS SCRIPTS");
-                            let ScriptsTable = `CREATE TABLE IF NOT EXISTS SCRIPTS (
+                                console.info("[INFO] ...CREATE TABLE IF NOT EXISTS SCRIPTS");
+                                let ScriptsTable = `CREATE TABLE IF NOT EXISTS SCRIPTS (
                                 Id int(11) NOT NULL AUTO_INCREMENT,
                                 Interpreter VARCHAR(64) DEFAULT "",
                                 Name VARCHAR(255) NOT NULL,
@@ -162,29 +190,30 @@ async function createTables() {
                                 UNIQUE KEY JobId (Name)
                             )`;
 
-                            connection.query(ScriptsTable, function (err, results, fields) {
-                                if (err) {
-                                    console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS SCRIPTS failed!'));
-                                    return reject(err);
-                                };
+                                connection.query(ScriptsTable, function (err, results, fields) {
+                                    if (err) {
+                                        console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS SCRIPTS failed!'));
+                                        return reject(err);
+                                    };
 
-                                const AddExampleScripts = [
-                                    `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (1, '/bin/sh', 'example.sh', '#!/bin/bash\necho "$(date) - Hello World from sh!";');`,
-                                    `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (2, '/usr/bin/php', 'example.php', '<?php\necho "Hello World from php!";\n?>');`,
-                                    `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (3, '/usr/bin/node', 'example.js', '#!/usr/bin/env node\nconsole.log("Hello, World from node!");');`
-                                ];
+                                    const AddExampleScripts = [
+                                        `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (1, '/bin/sh', 'example.sh', '#!/bin/bash\necho "$(date) - Hello World from sh!";');`,
+                                        `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (2, '/usr/bin/php', 'example.php', '<?php\necho "Hello World from php!";\n?>');`,
+                                        `INSERT IGNORE INTO SCRIPTS (Id, Interpreter, Name, Content) VALUES (3, '/usr/bin/node', 'example.js', '#!/usr/bin/env node\nconsole.log("Hello, World from node!");');`
+                                    ];
 
-                                AddExampleScripts.forEach((statement) => {
-                                    connection.query(statement, (err, results, fields) => {
-                                        if (err) {
-                                            console.error(colors.red('[ERROR] ...CREATE EXAMPLE SCRIPTS failed!'));
-                                            return reject(err);
-                                        };
+                                    AddExampleScripts.forEach((statement) => {
+                                        connection.query(statement, (err, results, fields) => {
+                                            if (err) {
+                                                console.error(colors.red('[ERROR] ...CREATE EXAMPLE SCRIPTS failed!'));
+                                                return reject(err);
+                                            };
+                                        });
                                     });
+
+                                    return resolve(true);
+
                                 });
-
-                                return resolve(true);
-
                             });
                         });
                     });
