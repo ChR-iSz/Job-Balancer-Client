@@ -210,7 +210,7 @@ async function main() {
                     console.log('[INFO] Killing Job successfully!', [Id, Pid]);
                     res.status(200).json({ result: true, message: 'Process killed successfully.' });
                 };
-                const UpdateDatabase = 'UPDATE JOBS SET StateId = 5 WHERE Id = ?';
+                const UpdateDatabase = 'UPDATE JOBS SET StateId = 5, FinishedAt = NOW() WHERE Id = ?';
                 db.query(UpdateDatabase, [Id], (err, result) => {
                     if (err) {
                         console.log('[ERROR] Update Job failed!', [Id, Pid]);
@@ -232,7 +232,7 @@ async function main() {
                 shell: true,
                 cwd: scriptDirectory + "/scripts",
             });
-            const UpdateWorker = 'UPDATE JOBS SET StateId = 2, WorkerId = ?, Pid = ? WHERE Id = ?';
+            const UpdateWorker = 'UPDATE JOBS SET StateId = 2, StartedAt = NOW(), WorkerId = ?, Pid = ? WHERE Id = ?';
             db.query(UpdateWorker, [ClientDbId, childProcess.pid, jobid], (err, result) => {
                 if (err) {
                     console.log("[ERROR] Update Job!" + err);
@@ -245,8 +245,8 @@ async function main() {
                     console.log(colors.yellow(`[INFO] Watchdog terminates the function because the specified maximum duration of the process has been reached!`));
                     childProcess.kill(); //childProcess.kill('SIGTERM');
                     clearTimeout(WatchdogTimer);
-                    console.log(`UPDATE JOBS SET StateId = 6, ReturnCode = 0 WHERE Id = ${jobid}`);
-                    const UpdateJob = 'UPDATE JOBS SET StateId = 6, ReturnCode = 0 WHERE Id = ?';
+                    console.log(`UPDATE JOBS SET StateId = 6, FinishedAt = NOW(), ReturnCode = 0 WHERE Id = ${jobid}`);
+                    const UpdateJob = 'UPDATE JOBS SET StateId = 6, FinishedAt = NOW(), ReturnCode = 0 WHERE Id = ?';
                     db.query(UpdateJob, [jobid], (err, result) => {
                         if (err) {
                             console.log("[ERROR] Update Job!" + err);
@@ -283,8 +283,8 @@ async function main() {
                 }
 
                 if (Number.isInteger(code)) {
-                    console.log(`UPDATE JOBS SET StateId = 3, ReturnCode = ${code} WHERE Id = ${jobid}`);
-                    const UpdateJob = 'UPDATE JOBS SET StateId = 3, ReturnCode = ? WHERE Id = ?';
+                    console.log(`UPDATE JOBS SET StateId = 3, FinishedAt = NOW(), ReturnCode = ${code} WHERE Id = ${jobid}`);
+                    const UpdateJob = 'UPDATE JOBS SET StateId = 3, FinishedAt = NOW(), ReturnCode = ? WHERE Id = ?';
                     db.query(UpdateJob, [code, jobid], (err, result) => {
                         if (err) {
                             console.log("[ERROR] Update Job!" + err);
@@ -293,9 +293,10 @@ async function main() {
                     });
                 };
             });
+
             childProcess.on('error', (code) => {
                 console.error(`[ERROR] Fehler beim Ausführen des Befehls: ${err}`);
-                const UpdateJob = 'UPDATE JOBS SET StateId = 4, ReturnCode = ? WHERE Id = ?';
+                const UpdateJob = 'UPDATE JOBS SET StateId = 4, FinishedAt = NOW(), ReturnCode = ? WHERE Id = ?';
                 db.query(UpdateJob, [code, jobid], (err, result) => {
                     if (err) {
                         console.log("[ERROR] Update Job!" + err);

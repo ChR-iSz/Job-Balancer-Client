@@ -156,6 +156,8 @@ async function createTables() {
                         Pid int(11) DEFAULT 0,
                         ReturnCode int(11) DEFAULT NULL,
                         CreatedAt datetime DEFAULT NULL,
+                        StartedAt datetime DEFAULT NULL,
+                        FinishedAt datetime DEFAULT NULL,
                         PRIMARY KEY (Id)
                     )`;
 
