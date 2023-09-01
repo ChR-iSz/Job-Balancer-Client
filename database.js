@@ -107,7 +107,7 @@ async function createTables() {
                     Port SMALLINT UNSIGNED NOT NULL,
                     UseSSL BOOLEAN NOT NULL DEFAULT 0,
                     Fqdn varchar(255) DEFAULT '',
-                    JobClassId int(11) DEFAULT 1,
+                    WorkerClassId int(11) DEFAULT 1,
                     PRIMARY KEY (Id),
                     UNIQUE KEY unique_serial (Serial)
                 )`;
@@ -118,8 +118,8 @@ async function createTables() {
                         return reject(err);
                     };
 
-                    console.info("[INFO] ...CREATE TABLE IF NOT EXISTS JOB_CLASSES");
-                    let JobClassesTable = `CREATE TABLE IF NOT EXISTS JOB_CLASSES (
+                    console.info("[INFO] ...CREATE TABLE IF NOT EXISTS WORKER_CLASSES");
+                    let WorkerClassesTable = `CREATE TABLE IF NOT EXISTS WORKER_CLASSES (
                         Id int(11) NOT NULL AUTO_INCREMENT,
                         Name VARCHAR(255) NOT NULL,
                         MaxJobs int(11) default 5,
@@ -127,16 +127,16 @@ async function createTables() {
                         UNIQUE KEY unique_serial (Name)
                     )`;
 
-                    connection.query(JobClassesTable, function (err, results, fields) {
+                    connection.query(WorkerClassesTable, function (err, results, fields) {
                         if (err) {
-                            console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS JOB_CLASSES failed!'));
+                            console.error(colors.red('[ERROR] ...CREATE TABLE IF NOT EXISTS WORKER_CLASSES failed!'));
                             return reject(err);
                         };
 
-                        const AddDefaultJobClass = [
-                            `INSERT IGNORE INTO JOB_CLASSES (Id, Name, MaxJobs) VALUES (1, 'Default', 5);`,
+                        const AddDefaultWorkerClass = [
+                            `INSERT IGNORE INTO WORKER_CLASSES (Id, Name, MaxJobs) VALUES (1, 'Default', 5);`,
                         ];
-                        AddDefaultJobClass.forEach((statement) => {
+                        AddDefaultWorkerClass.forEach((statement) => {
                             connection.query(statement, (err, results, fields) => {
                                 if (err) {
                                     console.error(colors.red('[ERROR] ...CREATE DEFAULT JOB-CLASS failed!'));
